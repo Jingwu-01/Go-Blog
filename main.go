@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
+	"text/template"
 
 	"github.com/gorilla/mux"
 )
@@ -35,29 +37,72 @@ func articlesIndexHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func articlesStoreHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "The value of title in r.Form is: %v <br>", r.FormValue("title"))
-	fmt.Fprintf(w, "The value of title in r.PostForm is: %v <br>", r.FormValue("title"))
+	title := r.FormValue("title")
+	body := r.FormValue("body")
+	errors := make(map[string]string)
+
+	if title == "" {
+		errors["title"] = "Title cannot be empty"
+	} else if len(title) < 3 || len(title) > 40 {
+		errors["title"] = fmt.Sprintf("The length of title should be between 3 to 40 characters. The current length is %v", len(title))
+	}
+
+	if body == "" {
+		errors["body"] = "Content cannot be empty"
+	} else if len(body) < 10 {
+		errors["body"] = fmt.Sprintf("The length of body should be greater or equal to 10 characters. The current length is %v", len(body))
+	}
+
+	if len(errors) == 0 {
+		fmt.Fprintf(w, "Validation passed! <br>")
+		fmt.Fprintf(w, "The value of title is %v <br>", title)
+		fmt.Fprintf(w, "THe value of body is %v <br>", body)
+	} else {
+		storeURL, _ := router.Get("articles.store").URL()
+
+		data := ArticlesFormData{
+			Title:  title,
+			Body:   body,
+			URL:    storeURL,
+			Errors: errors,
+		}
+		tmpl, err := template.ParseFiles("resources/views/articles/create.gohtml")
+		if err != nil {
+			panic(err)
+		}
+
+		err = tmpl.Execute(w, data)
+		if err != nil {
+			panic(err)
+		}
+	}
 
 }
 
 func articlesCreateHandler(w http.ResponseWriter, r *http.Request) {
-	html := `
-	<!DOCTYPE html>
-	<html lang="en">
-	<head>
-		<title>Create a Tech Blog</title>
-	</head>
-	<body>
-		<form action="%s" method="post">
-			<input type="text" name="title">
-			<textarea name="body" cols="30" rows="10"></textarea>
-			<button type="submit">Sumbit</button>
-		</form>
-	</body>
-	</html>
-	`
 	storeURL, _ := router.Get("articles.store").URL()
-	fmt.Fprintf(w, html, storeURL)
+	data := ArticlesFormData{
+		Title:  "",
+		Body:   "",
+		URL:    storeURL,
+		Errors: nil,
+	}
+
+	tmpl, err := template.ParseFiles("resources/views/articles/create.gohtml")
+	if err != nil {
+		panic(err)
+	}
+
+	err = tmpl.Execute(w, data)
+	if err != nil {
+		panic(err)
+	}
+}
+
+type ArticlesFormData struct {
+	Title, Body string
+	URL         *url.URL
+	Errors      map[string]string
 }
 
 func forceHTMLMiddleware(h http.Handler) http.Handler {
