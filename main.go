@@ -112,7 +112,7 @@ func HTMLMiddleware(h http.Handler) http.Handler {
 	})
 }
 
-func removeTrailingSlashMiddleWare(h http.Handler) http.Handler {
+func removeTrailingSlash(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
 			r.URL.Path = strings.TrimSuffix(r.URL.Path, "/")
@@ -135,7 +135,5 @@ func main() {
 
 	router.Use(HTMLMiddleware)
 
-	router.Use(removeTrailingSlashMiddleWare)
-
-	http.ListenAndServe(":3000", router)
+	http.ListenAndServe(":3000", removeTrailingSlash(router))
 }
