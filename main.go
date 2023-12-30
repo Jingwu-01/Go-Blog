@@ -105,14 +105,14 @@ type ArticlesFormData struct {
 	Errors      map[string]string
 }
 
-func forceHTMLMiddleware(h http.Handler) http.Handler {
+func HTMLMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		h.ServeHTTP(w, r)
 	})
 }
 
-func removeTrailingSlash(h http.Handler) http.Handler {
+func removeTrailingSlashMiddleWare(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
 			r.URL.Path = strings.TrimSuffix(r.URL.Path, "/")
@@ -122,6 +122,7 @@ func removeTrailingSlash(h http.Handler) http.Handler {
 }
 
 func main() {
+
 	router.HandleFunc("/", homeHandler).Methods("GET").Name("home")
 	router.HandleFunc("/about", aboutHandler).Methods(("GET")).Name("about")
 
@@ -132,7 +133,9 @@ func main() {
 
 	router.NotFoundHandler = http.HandlerFunc(notFoundHandler)
 
-	router.Use(forceHTMLMiddleware)
+	router.Use(HTMLMiddleware)
 
-	http.ListenAndServe(":3000", removeTrailingSlash(router))
+	router.Use(removeTrailingSlashMiddleWare)
+
+	http.ListenAndServe(":3000", router)
 }
