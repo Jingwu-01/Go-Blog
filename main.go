@@ -12,6 +12,12 @@ import (
 
 var router = mux.NewRouter()
 
+type ArticlesFormData struct {
+	Title, Body string
+	URL         *url.URL
+	Errors      map[string]string
+}
+
 func homeHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hello, this is the updated go blog. </h1>")
 }
@@ -66,7 +72,7 @@ func articlesStoreHandler(w http.ResponseWriter, r *http.Request) {
 			URL:    storeURL,
 			Errors: errors,
 		}
-		tmpl, err := template.ParseFiles("resources/views/articles/create.gohtml")
+		tmpl, err := template.ParseFiles("src/views/articles/create.gohtml")
 		if err != nil {
 			panic(err)
 		}
@@ -88,7 +94,7 @@ func articlesCreateHandler(w http.ResponseWriter, r *http.Request) {
 		Errors: nil,
 	}
 
-	tmpl, err := template.ParseFiles("resources/views/articles/create.gohtml")
+	tmpl, err := template.ParseFiles("src/views/articles/create.gohtml")
 	if err != nil {
 		panic(err)
 	}
@@ -97,12 +103,6 @@ func articlesCreateHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
-}
-
-type ArticlesFormData struct {
-	Title, Body string
-	URL         *url.URL
-	Errors      map[string]string
 }
 
 func HTMLMiddleware(h http.Handler) http.Handler {
@@ -122,7 +122,6 @@ func removeTrailingSlash(h http.Handler) http.Handler {
 }
 
 func main() {
-
 	router.HandleFunc("/", homeHandler).Methods("GET").Name("home")
 	router.HandleFunc("/about", aboutHandler).Methods(("GET")).Name("about")
 

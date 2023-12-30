@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Create My Blog</title>
+    <style type="text/css">
+      .error {
+        color: red;
+      }
+      #container {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      #title-input {
+        width: 30%;
+      } 
+      #sumbit-button{
+        width: 5%;
+      }
+    </style>
+  </head>
+
+  <body>
+    <form action="{{ .URL }}" method="post" id="container">
+      <label for="title">Please enter your title: </label>
+      <input type="text" name="title" value="{{ .Title }}" id="title-input" />
+      {{ with.Errors.title }}
+      <p class="error">{{ . }}</p>
+      {{ end }}
+
+      <label for="body">Please enter your body:</label>
+      <textarea name="body" cols="30" rows="10">{{ .Body }}</textarea>
+      {{ with.Errors.body }}
+      <p class="error">{{ . }}</p>
+      {{ end }}
+
+      <button type="submit" id="sumbit-button">Submit</button>
+    </form>
+  </body>
+</html>
